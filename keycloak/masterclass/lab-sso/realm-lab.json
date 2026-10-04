@@ -1,30 +1,29 @@
 {
   "realm": "lab-realm",
   "enabled": true,
+  "accessTokenLifespan": 900,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["de", "en"],
+  "defaultLocale": "en",
   "clients": [
     {
-      "clientId": "outline",
+      "clientId": "acme-timetracking",
+      "name": "ACME Timetracking",
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
-      "secret": "outline-secret",
-      "redirectUris": ["http://localhost:8082/*"],
-      "webOrigins": ["http://localhost:8082"],
-      "publicClient": false,
-      "standardFlowEnabled": true,
-      "directAccessGrantsEnabled": false,
-      "protocol": "openid-connect"
-    },
-    {
-      "clientId": "nextcloud",
-      "enabled": true,
-      "clientAuthenticatorType": "client-secret",
-      "secret": "nextcloud-secret",
-      "redirectUris": ["http://localhost:8081/*"],
+      "secret": "acme-timetracking-secret",
+      "rootUrl": "http://localhost:8081",
+      "baseUrl": "/",
+      "redirectUris": ["http://localhost:8081/callback"],
       "webOrigins": ["http://localhost:8081"],
       "publicClient": false,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
-      "protocol": "openid-connect"
+      "protocol": "openid-connect",
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:8081/",
+        "pkce.code.challenge.method": "S256"
+      }
     }
   ],
   "users": [

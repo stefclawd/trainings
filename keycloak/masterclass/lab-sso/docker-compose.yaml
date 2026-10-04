@@ -1,37 +1,12 @@
 name: kc-mc-lab-sso
 services:
-  postgres:
-    image: postgres:17
-    environment:
-      POSTGRES_USER: outline
-      POSTGRES_PASSWORD: outline
-      POSTGRES_DB: outline
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U outline"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - postgres-data:/var/lib/postgresql
-    networks:
-      - backend
-
-  redis:
-    image: redis:latest
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - backend
-
   keycloak:
     image: quay.io/keycloak/keycloak:26.6.2
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_LOG_LEVEL: INFO
+      # Browser nutzt localhost:8080, die Apps sprechen intern mit keycloak:8080
       KC_HOSTNAME: http://localhost:8080
       KC_HOSTNAME_BACKCHANNEL_DYNAMIC: true
     volumes:
@@ -46,59 +21,40 @@ services:
       - "start-dev" # Only for Dev-Environment!
       - "--import-realm"
 
-  nextcloud:
-    image: nextcloud:34
+  acme-timetracking:
+    build: ./acme-app
     environment:
-      SQLITE_DATABASE: nextcloud
-      NEXTCLOUD_ADMIN_USER: admin
-      NEXTCLOUD_ADMIN_PASSWORD: admin
-      NEXTCLOUD_TRUSTED_DOMAINS: localhost
+      APP_VARIANT: timetracking
+      APP_COLOR: "#1f6feb"
+      BASE_URL: http://localhost:8081
+      OIDC_ISSUER_INTERNAL: http://keycloak:8080/realms/lab-realm
+      CLIENT_ID: acme-timetracking
+      CLIENT_SECRET: acme-timetracking-secret
+      SESSION_COOKIE_NAME: acme_time_sid
+      SESSION_SECRET: timetracking-session-secret
     ports:
-      - 8081:80
-    volumes:
-      - nextcloud-data:/var/www/html
+      - 127.0.0.1:8081:3000
     networks:
       - backend
 
-  outline:
-    image: outlinewiki/outline:1.5.0
+  acme-travel:
+    build: ./acme-app
     environment:
-      SECRET_KEY: fd236707c6de2ae656513620a88ed700a6005983e2cb609b7dd81958b37415f1
-      UTILS_SECRET: 1ca4313be4a69989b700a3feb62c8794dfb294f0fd4b1e1d7a294b2751424643
-      DATABASE_URL: postgres://outline:outline@postgres:5432/outline
-      PGSSLMODE: disable
-      REDIS_URL: redis://redis:6379
-      URL: http://localhost:8082
-      PORT: 3000
-      FORCE_HTTPS: false
-      FILE_STORAGE: local
-      FILE_STORAGE_LOCAL_ROOT_DIR: /var/lib/outline/data
-      # OIDC: Browser-Redirects nutzen localhost, Server-zu-Server nutzt den Docker-Service-Namen
-      OIDC_CLIENT_ID: outline
-      OIDC_CLIENT_SECRET: outline-secret
-      OIDC_AUTH_URI: http://localhost:8080/realms/lab-realm/protocol/openid-connect/auth
-      OIDC_TOKEN_URI: http://keycloak:8080/realms/lab-realm/protocol/openid-connect/token
-      OIDC_USERINFO_URI: http://keycloak:8080/realms/lab-realm/protocol/openid-connect/userinfo
-      OIDC_LOGOUT_URI: http://localhost:8080/realms/lab-realm/protocol/openid-connect/logout
-      OIDC_DISPLAY_NAME: Keycloak
-      OIDC_SCOPES: openid profile email
+      APP_VARIANT: travel
+      APP_COLOR: "#2e7d32"
+      BASE_URL: http://localhost:8082
+      OIDC_ISSUER_INTERNAL: http://keycloak:8080/realms/lab-realm
+      CLIENT_ID: acme-travel
+      CLIENT_SECRET: "" # TODO: Secret des Clients acme-travel aus Keycloak (Tab Credentials) eintragen
+      SESSION_COOKIE_NAME: acme_travel_sid
+      SESSION_SECRET: travel-session-secret
     ports:
-      - 8082:3000
-    volumes:
-      - outline-data:/var/lib/outline/data
+      - 127.0.0.1:8082:3000
     networks:
       - backend
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
 networks:
   backend:
 
 volumes:
-  postgres-data:
   keycloak-data:
-  nextcloud-data:
-  outline-data:

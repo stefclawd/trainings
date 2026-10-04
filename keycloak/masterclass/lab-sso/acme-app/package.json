@@ -1,0 +1,17 @@
+{
+  "name": "acme-app",
+  "version": "1.0.0",
+  "description": "ACME Demo-Anwendung (Timetracking / Reisekosten) mit OIDC-Login via Keycloak",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "jose": "^6.2.12",
+    "openid-client": "^6.8.8"
+  }
+}
