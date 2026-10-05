@@ -22,7 +22,11 @@ services:
       - "--import-realm"
 
   acme-timetracking:
-    build: ./acme-app
+    build:
+      context: ./acme-app
+      # npm ci needs working DNS; "host" avoids broken IPv6-only resolver
+      # propagation into the IPv4-only BuildKit build network
+      network: host
     environment:
       APP_VARIANT: timetracking
       APP_COLOR: "#1f6feb"
@@ -38,7 +42,11 @@ services:
       - backend
 
   acme-travel:
-    build: ./acme-app
+    build:
+      context: ./acme-app
+      # npm ci needs working DNS; "host" avoids broken IPv6-only resolver
+      # propagation into the IPv4-only BuildKit build network
+      network: host
     environment:
       APP_VARIANT: travel
       APP_COLOR: "#2e7d32"
